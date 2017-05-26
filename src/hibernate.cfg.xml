@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <property name="connection.url">jdbc:mysql://121.42.140.71:3306/shiguang</property>
+        <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+        <property name="connection.username">shiguang</property>
+        <property name="connection.password">shiguang20170522</property>
+        <!-- 指定JDBC连接池大小 -->
+        <property name="connection.pool_size">20</property>
+        <!-- 指定数据库SQL方言 -->
+        <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+        <!-- 打开Hibernate自动会话上下文管理 -->
+        <property name="current_session_context_class">thread</property>
+        <!-- 关闭二级缓存 -->
+        <property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
+        <!-- 指定将所有执行的SQL语句回显到stdout -->
+        <property name="show_sql">true</property>
+        <!-- 制定在启动时对表进行检查 -->
+        <property name="hibernate.hbm2ddl.auto">validate</property>
+        <!-- 指定映射文件，若有多个映射文件，使用多个mapping元素指定 -->
+        <mapping class="entity.User"/>
+        <mapping resource="entity/User.hbm.xml"/>
+
+
+    </session-factory>
+</hibernate-configuration>
