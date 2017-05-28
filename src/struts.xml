@@ -13,5 +13,6 @@
         <action name="sendIdentifyCode" class="action.RegistAction" method="sendIdentifyCode"/>
         <action name="login" class="action.LoginAction" method="login"/>
         <action name="doPostIcon" class="action.UserAction" method="doPostIcon"/>
+        <action name="doStealPower" class="action.UserAction" method="doStealPower"/>
     </package>
 </struts>

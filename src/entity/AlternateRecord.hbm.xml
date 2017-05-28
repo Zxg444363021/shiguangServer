@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="entity.AlternateRecord" table="alternate_record" schema="shiguang">
+        <id name="id">
+            <column name="id" sql-type="bigint(5)"/>
+        </id>
+        <property name="user1Id">
+            <column name="user1id" sql-type="bigint(5)"/>
+        </property>
+        <property name="user2Id">
+            <column name="user2id" sql-type="bigint(5)"/>
+        </property>
+        <property name="type">
+            <column name="type" sql-type="int(11)"/>
+        </property>
+        <property name="power">
+            <column name="power" sql-type="int(11)"/>
+        </property>
+        <property name="time">
+            <column name="time" sql-type="datetime"/>
+        </property>
+    </class>
+</hibernate-mapping>

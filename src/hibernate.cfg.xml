@@ -6,8 +6,6 @@
     <session-factory>
         <property name="connection.url">jdbc:mysql://121.42.140.71:3306/shiguang</property>
         <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
-        <property name="connection.username">shiguang</property>
-        <property name="connection.password">shiguang20170522</property>
         <!-- 指定JDBC连接池大小 -->
         <property name="connection.pool_size">20</property>
         <!-- 指定数据库SQL方言 -->
@@ -23,6 +21,10 @@
         <!-- 指定映射文件，若有多个映射文件，使用多个mapping元素指定 -->
         <mapping class="entity.User"/>
         <mapping resource="entity/User.hbm.xml"/>
+        <mapping resource="entity/AlternateRecord.hbm.xml"/>
+        <mapping class="entity.AlternateRecord"/>
+        <mapping resource="entity/Power.hbm.xml"/>
+        <mapping class="entity.Power"/>
 
 
     </session-factory>

@@ -7,6 +7,7 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import entity.Power;
 import org.apache.commons.io.FileUtils;
 import org.apache.struts2.ServletActionContext;
 import org.hibernate.HibernateException;
@@ -21,14 +22,24 @@ public class UserAction extends ActionSupport {
 	private static final String BASEURL="http://121.42.140.71:8080/shiguangServer/";
 	public static final String TOMATO_POWER="1";
 	public static final String CUSTOM_POWER="2";
+	public static final String WATERING="3";
 	private String phone;
-	private Long userid;
+	private Long user1id;
 	private File mPhoto;
 	private String name;
-	private String user2id;
+	private Long user2id;
 	private String powertype;
+	private Long userid;
 
-	public String getPowertype() {
+    public Long getUserid() {
+        return userid;
+    }
+
+    public void setUserid(Long userid) {
+        this.userid = userid;
+    }
+
+    public String getPowertype() {
 		return powertype;
 	}
 
@@ -36,15 +47,15 @@ public class UserAction extends ActionSupport {
 		this.powertype = powertype;
 	}
 
-	public String getUser2id() {
-		return user2id;
-	}
+    public Long getUser2id() {
+        return user2id;
+    }
 
-	public void setUser2id(String user2id) {
-		this.user2id = user2id;
-	}
+    public void setUser2id(Long user2id) {
+        this.user2id = user2id;
+    }
 
-	public String getName() {
+    public String getName() {
 		return name;
 	}
 
@@ -58,14 +69,16 @@ public class UserAction extends ActionSupport {
 	public void setPhone(String phone) {
 		this.phone = phone;
 	}
-	public Long getUserid() {
-		return userid;
-	}
-	public void setUserid(Long userid) {
-		this.userid = userid;
-	}
 
-	public File getmPhoto() {
+    public Long getUser1id() {
+        return user1id;
+    }
+
+    public void setUser1id(Long user1id) {
+        this.user1id = user1id;
+    }
+
+    public File getmPhoto() {
 		return mPhoto;
 	}
 	public void setmPhoto(File mPhoto) {
@@ -124,7 +137,7 @@ public class UserAction extends ActionSupport {
 	 }
 
 	/**
-	 * 偷能量
+	 * 偷能量,或者是浇水
 	 * @return
 	 */
 	public String doStealPower(){
@@ -139,17 +152,55 @@ public class UserAction extends ActionSupport {
 		Session session=HibernateUtil.getSessionFactory().openSession();
 		session.beginTransaction();
 		//被偷用户
-		User u1=session.get(User.class,new Long(getUserid()));
+		User u1=session.get(User.class,new Long(getUser1id()));
 		//主偷用户
 		User u2=session.get(User.class,new Long(getUser2id()));
-		int u2p=u2.getPower();
+        //被偷用户
+		Power p1=session.get(Power.class,new Long(getUser1id()));
+        //主偷用户
+        Power p2=session.get(Power.class,new Long(getUser2id()));
+
 		if(getPowertype().equals(TOMATO_POWER)){	//如果偷的是番茄能量
+            int u1p=p1.getPower1Yesterday();
+            int u1ps=p1.getPower1Stolen();
+            double sum=u1p+u1ps;
+            if(u1p/sum<=0.3){//剩余太少，不能偷
 
+            }else{
+                //从剩余的能量中减去总能量的30%之后再乘0.5，获取一个随机值
+                int randNum =(int)(Math.random() * (( u1p-sum*0.3)*0.5 + 1));
+                //已被偷的能量加上
+                p1.setPower1Stolen(p1.getPower1Stolen()+randNum);
+                //剩余能量减去
+                p1.setPower1Yesterday(p1.getPower1Yesterday()-randNum);
+                p2.setPower(p2.getPower()+randNum);
+                session.update(p1);
+                session.update(p2);
 
+            }
 		}else if(getPowertype().equals(CUSTOM_POWER)){//如果偷的是习惯能量
+            int u1p=p1.getPower2Yesterday();
+            int u1ps=p1.getPower2Stolen();
+            double sum=u1p+u1ps;
+            if(u1p/sum<=0.3){//剩余太少，不能偷
+
+            }else{
+                //从剩余的能量中减去总能量的30%之后再乘0.5，获取一个随机值
+                int randNum =(int)(Math.random() * (( u1p-sum*0.3)*0.5 + 1));
+                //已被偷的能量加上
+                p1.setPower2Stolen(p1.getPower2Stolen()+randNum);
+                //剩余能量减去
+                p1.setPower2Yesterday(p1.getPower2Yesterday()-randNum);
+                p2.setPower(p2.getPower()+randNum);
+                session.update(p1);
+                session.update(p2);
+
+            }
+		}else if(getPowertype().equals(WATERING)){//如果是浇水
 
 		}
-		int randNum =100000+(int)(Math.random() * ((999999 - 100000) + 1));
+        session.getTransaction().commit();
+		session.close();
 	 	return null;
 	}
 }
