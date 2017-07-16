@@ -278,6 +278,9 @@ public class RegistAction extends ActionSupport {
         }
         return data.toString();
     }
+
+
+
 	
 //	public void p(){
 //		//1，获取cipher 对象

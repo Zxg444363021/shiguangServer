@@ -55,7 +55,6 @@
     <orderEntry type="library" name="fastjson-1.2.24" level="project" />
     <orderEntry type="library" name="freemarker-2.3.22" level="project" />
     <orderEntry type="library" name="gson-2.2.4" level="project" />
-    <orderEntry type="library" name="hibernate-core-5.2.2.Final" level="project" />
     <orderEntry type="library" name="httpclient-4.5.2" level="project" />
     <orderEntry type="library" name="httpcore-4.4.4" level="project" />
     <orderEntry type="library" name="javassist-3.11.0.GA" level="project" />

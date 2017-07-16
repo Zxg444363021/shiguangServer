@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="shiguangServer">
+    <output-path>$USER_HOME$/Desktop</output-path>
+    <root id="archive" name="shiguangServer.war">
+      <element id="artifact" artifact-name="shiguangServer:war exploded" />
+      <element id="dir-copy" path="$PROJECT_DIR$/web" />
+    </root>
+  </artifact>
+</component>

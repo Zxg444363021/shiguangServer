@@ -25,6 +25,17 @@ public class User {
     private String sinaname;
     private Integer tomatoN;
     private Integer powerToday;
+    private Integer canSteal;
+
+    public User(){}
+
+    public User(long userid, String name, String icon, Integer power, Integer tomatoN) {
+        this.userid = userid;
+        this.name = name;
+        this.icon = icon;
+        this.power = power;
+        this.tomatoN = tomatoN;
+    }
 
     @Id
     @Column(name = "userid", nullable = false)
@@ -220,5 +231,15 @@ public class User {
         result = 31 * result + (tomatoN != null ? tomatoN.hashCode() : 0);
         result = 31 * result + (powerToday != null ? powerToday.hashCode() : 0);
         return result;
+    }
+
+    @Basic
+    @Column(name = "canSteal", nullable = true)
+    public Integer getCanSteal() {
+        return canSteal;
+    }
+
+    public void setCanSteal(Integer canSteal) {
+        this.canSteal = canSteal;
     }
 }

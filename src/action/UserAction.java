@@ -2,11 +2,16 @@ package action;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Timestamp;
+import java.util.List;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.gson.Gson;
+import entity.AlternateRecord;
 import entity.Power;
 import org.apache.commons.io.FileUtils;
 import org.apache.struts2.ServletActionContext;
@@ -16,6 +21,7 @@ import org.hibernate.Session;
 import com.opensymphony.xwork2.ActionSupport;
 
 import entity.User;
+import org.hibernate.query.Query;
 import util.HibernateUtil;
 
 public class UserAction extends ActionSupport {
@@ -140,7 +146,7 @@ public class UserAction extends ActionSupport {
 	 * 偷能量,或者是浇水
 	 * @return
 	 */
-	public String doStealPower(){
+	public String doStealPower() throws IOException {
 		HttpServletRequest request=ServletActionContext.getRequest();
 		HttpServletResponse response=ServletActionContext.getResponse();
 		response.setCharacterEncoding("UTF-8");
@@ -160,12 +166,16 @@ public class UserAction extends ActionSupport {
         //主偷用户
         Power p2=session.get(Power.class,new Long(getUser2id()));
 
+        String result="";
+
 		if(getPowertype().equals(TOMATO_POWER)){	//如果偷的是番茄能量
             int u1p=p1.getPower1Yesterday();
             int u1ps=p1.getPower1Stolen();
             double sum=u1p+u1ps;
             if(u1p/sum<=0.3){//剩余太少，不能偷
-
+				p1.setCanPower1Steal(0);
+				session.update(p1);
+				response.setStatus(201);
             }else{
                 //从剩余的能量中减去总能量的30%之后再乘0.5，获取一个随机值
                 int randNum =(int)(Math.random() * (( u1p-sum*0.3)*0.5 + 1));
@@ -173,17 +183,38 @@ public class UserAction extends ActionSupport {
                 p1.setPower1Stolen(p1.getPower1Stolen()+randNum);
                 //剩余能量减去
                 p1.setPower1Yesterday(p1.getPower1Yesterday()-randNum);
-                p2.setPower(p2.getPower()+randNum);
-                session.update(p1);
-                session.update(p2);
+				int ppp=p2.getPower()+randNum;
+				p2.setPower(ppp);
 
+				u1.setPower(p1.getPower());
+				u2.setPower(ppp);
+
+				AlternateRecord alternateRecord=new AlternateRecord();
+				alternateRecord.setUser1Id(getUser1id());
+				alternateRecord.setUser2Id(getUser2id());
+				alternateRecord.setPower(randNum);
+				alternateRecord.setType(Integer.parseInt(TOMATO_POWER));
+				alternateRecord.setTime(new Timestamp(System.currentTimeMillis()));
+				result=new Gson().toJson(alternateRecord);
+				session.save(alternateRecord);
+				//如果偷完之后能量太少，就设置为不能偷
+				if(p1.getPower()/(p1.getPower1Yesterday()+p1.getPower1Stolen())<0.3){
+					p1.setCanPower1Steal(0);
+				}
+				session.update(p1);
+				session.update(p2);
+				session.update(u1);
+				session.update(u2);
+				response.setStatus(200);
             }
 		}else if(getPowertype().equals(CUSTOM_POWER)){//如果偷的是习惯能量
             int u1p=p1.getPower2Yesterday();
             int u1ps=p1.getPower2Stolen();
             double sum=u1p+u1ps;
             if(u1p/sum<=0.3){//剩余太少，不能偷
-
+				p1.setCanPower2Steal(0);
+				session.update(p1);
+				response.setStatus(201);
             }else{
                 //从剩余的能量中减去总能量的30%之后再乘0.5，获取一个随机值
                 int randNum =(int)(Math.random() * (( u1p-sum*0.3)*0.5 + 1));
@@ -191,16 +222,150 @@ public class UserAction extends ActionSupport {
                 p1.setPower2Stolen(p1.getPower2Stolen()+randNum);
                 //剩余能量减去
                 p1.setPower2Yesterday(p1.getPower2Yesterday()-randNum);
-                p2.setPower(p2.getPower()+randNum);
+                int ppp=p2.getPower()+randNum;
+                p2.setPower(ppp);
+
+				u1.setPower(p1.getPower());
+				u2.setPower(ppp);
+				//产生一条记录
+				AlternateRecord alternateRecord=new AlternateRecord();
+				alternateRecord.setUser1Id(getUser1id());
+				alternateRecord.setUser2Id(getUser2id());
+				alternateRecord.setPower(randNum);
+				alternateRecord.setType(Integer.parseInt(CUSTOM_POWER));
+				alternateRecord.setTime(new Timestamp(System.currentTimeMillis()));
+				result=new Gson().toJson(alternateRecord);
+				session.save(alternateRecord);
+				//如果偷完之后能量太少，就设置为不能偷
+				if(p1.getPower2Yesterday()/(p1.getPower2Yesterday()+p1.getPower2Stolen())<0.3){
+					p1.setCanPower2Steal(0);
+				}
                 session.update(p1);
                 session.update(p2);
+				session.update(u1);
+				session.update(u2);
+
+				response.setStatus(200);
 
             }
 		}else if(getPowertype().equals(WATERING)){//如果是浇水
+			p2.setPower(p2.getPower()+10);
+			u2.setPower(u2.getPower()+10);
+			AlternateRecord alternateRecord=new AlternateRecord();
+			alternateRecord.setUser1Id(getUser1id());
+			alternateRecord.setUser2Id(getUser2id());
+			alternateRecord.setPower(10);
+			alternateRecord.setType(Integer.parseInt(WATERING));
+			alternateRecord.setTime(new Timestamp(System.currentTimeMillis()));
+			result=new Gson().toJson(alternateRecord);
+			session.save(alternateRecord);
+			session.update(p2);
+			session.update(u2);
+			response.setStatus(200);
 
 		}
+		PrintWriter printWriter=response.getWriter();
+		printWriter.write(result);
+		printWriter.flush();
+		printWriter.close();
         session.getTransaction().commit();
 		session.close();
 	 	return null;
+	}
+
+	public String doGetRank() throws IOException {
+		HttpServletRequest request=ServletActionContext.getRequest();
+		HttpServletResponse response=ServletActionContext.getResponse();
+		response.setCharacterEncoding("UTF-8");
+		response.setContentType("application/json; charset=utf-8");
+		Session session=HibernateUtil.getSessionFactory().openSession();
+		session.beginTransaction();
+		String query_str="select new User(userid,name,icon,power,tomatoN) from User order by power desc ";
+		Query<User> query=session.createQuery(query_str);
+		List<User> list=query.getResultList();
+		Gson gson=new Gson();
+		String result=gson.toJson(list);
+		response.setStatus(200);
+		PrintWriter writer;
+		writer=response.getWriter();
+		writer.write(result);
+		writer.flush();
+		writer.close();
+		session.getTransaction().commit();
+		session.close();
+		return null;
+	}
+
+	/**
+	 * 获取朋友的信息
+	 * @return
+	 * @throws IOException
+	 */
+	public String doGetFriendInfo() throws IOException {
+		HttpServletRequest request=ServletActionContext.getRequest();
+		HttpServletResponse response=ServletActionContext.getResponse();
+		request.getAttribute("user1id");
+		request.getAttribute("user2id");
+		response.setCharacterEncoding("UTF-8");
+		response.setContentType("application/json; charset=utf-8");
+		Session session=HibernateUtil.getSessionFactory().openSession();
+		session.beginTransaction();
+		//先查一下交互记录，如果有user1对user2的交互了，就不让他偷了
+		String query_str="from AlternateRecord a where a.user1Id=:user1Id and a.user2Id=:user2Id and a.time>:time";
+		Query<AlternateRecord> query=session.createQuery(query_str);
+		query.setParameter("user1Id", getUser1id());
+		query.setParameter("user2Id", getUser2id());
+		Timestamp today0clock=new Timestamp(System.currentTimeMillis());
+		today0clock.setHours(0);
+		today0clock.setMinutes(0);
+		query.setParameter("time",today0clock);
+		List<AlternateRecord> list=query.getResultList();
+
+		Power p=session.get(Power.class,new Long(getUser2id()));
+		session.getTransaction().commit();
+		session.close();
+		if(list.size()==0){
+
+		}else{
+			for(AlternateRecord a:list){
+				if(a.getType()==1){
+					p.setCanPower1Steal(0);
+				}else if(a.getType()==2){
+					p.setCanPower2Steal(0);
+				}
+			}
+		}
+		response.setStatus(200);
+		PrintWriter writer;
+		writer=response.getWriter();
+		p.setDate(null);
+		writer.write(new Gson().toJson(p));
+		writer.flush();
+		writer.close();
+		return null;
+	}
+
+
+	public String doGetRecord() throws IOException {
+		HttpServletRequest request=ServletActionContext.getRequest();
+		HttpServletResponse response=ServletActionContext.getResponse();
+		request.getAttribute("userid");
+		response.setCharacterEncoding("UTF-8");
+		response.setContentType("application/json; charset=utf-8");
+		Session session=HibernateUtil.getSessionFactory().openSession();
+		session.beginTransaction();
+		String queryStr="from AlternateRecord a where a.user2Id=:user2id";
+		Query<AlternateRecord> query=session.createQuery(queryStr);
+		query.setParameter("user2id",getUserid());
+		List<AlternateRecord> list=query.getResultList();
+		if(list.size()!=0){
+			PrintWriter printWriter=response.getWriter();
+			printWriter.write(new Gson().toJson(list));
+			printWriter.flush();
+			printWriter.close();
+		}
+		session.getTransaction().commit();
+		session.close();
+		return null;
 	}
 }

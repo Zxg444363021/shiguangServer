@@ -20,6 +20,17 @@ public class Power {
     private Date date;
     private int power1Yesterday;
     private int power2Yesterday;
+    private int canPower1Steal;
+    private int canPower2Steal;
+
+    public Power(){}
+    public Power(long userid, int power1Yesterday, int power2Yesterday, int canPower1Steal, int canPower2Steal) {
+        this.userid = userid;
+        this.power1Yesterday = power1Yesterday;
+        this.power2Yesterday = power2Yesterday;
+        this.canPower1Steal = canPower1Steal;
+        this.canPower2Steal = canPower2Steal;
+    }
 
     @Id
     @Column(name = "userid", nullable = false)
@@ -142,5 +153,25 @@ public class Power {
         result = 31 * result + power1Yesterday;
         result = 31 * result + power2Yesterday;
         return result;
+    }
+
+    @Basic
+    @Column(name = "can_power1_steal", nullable = false)
+    public int getCanPower1Steal() {
+        return canPower1Steal;
+    }
+
+    public void setCanPower1Steal(int canPower1Steal) {
+        this.canPower1Steal = canPower1Steal;
+    }
+
+    @Basic
+    @Column(name = "can_power2_steal", nullable = false)
+    public int getCanPower2Steal() {
+        return canPower2Steal;
+    }
+
+    public void setCanPower2Steal(int canPower2Steal) {
+        this.canPower2Steal = canPower2Steal;
     }
 }
