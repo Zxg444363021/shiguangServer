@@ -25,8 +25,8 @@
         <mapping resource="entity/User.hbm.xml"/>
         <mapping resource="entity/AlternateRecord.hbm.xml"/>
         <mapping class="entity.AlternateRecord"/>
-        <mapping class="entity.Power"/>
-        <mapping resource="entity/Power.hbm.xml"/>
+        <mapping resource="entity/OnesRecord.hbm.xml"/>
+        <mapping class="entity.OnesRecord"/>
         <!--<mapping resource="entity/Power.hbm.xml"/>-->
         <!--<mapping class="entity.Power"/>-->
 

@@ -4,7 +4,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -12,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.google.gson.Gson;
 import entity.AlternateRecord;
-import entity.Power;
+import entity.OnesRecord;
 import org.apache.commons.io.FileUtils;
 import org.apache.struts2.ServletActionContext;
 import org.hibernate.HibernateException;
@@ -29,6 +31,7 @@ public class UserAction extends ActionSupport {
 	public static final String TOMATO_POWER="1";
 	public static final String CUSTOM_POWER="2";
 	public static final String WATERING="3";
+	public static final int CANTSTEAL=201;
 	private String phone;
 	private Long user1id;
 	private File mPhoto;
@@ -151,115 +154,99 @@ public class UserAction extends ActionSupport {
 		HttpServletResponse response=ServletActionContext.getResponse();
 		response.setCharacterEncoding("UTF-8");
 		response.setContentType("application/json; charset=utf-8");
-		request.getAttribute("userid");
-		request.getAttribute("user2id");
+		request.getAttribute("userid");//主偷用户
+		request.getAttribute("user2id");//被偷用户
 		request.getAttribute("powertype");
 
 		Session session=HibernateUtil.getSessionFactory().openSession();
 		session.beginTransaction();
-		//被偷用户
-		User u1=session.get(User.class,new Long(getUser1id()));
 		//主偷用户
+		User u1=session.get(User.class,new Long(getUser1id()));
+		//被偷用户
 		User u2=session.get(User.class,new Long(getUser2id()));
-        //被偷用户
-		Power p1=session.get(Power.class,new Long(getUser1id()));
-        //主偷用户
-        Power p2=session.get(Power.class,new Long(getUser2id()));
 
         String result="";
 
 		if(getPowertype().equals(TOMATO_POWER)){	//如果偷的是番茄能量
-            int u1p=p1.getPower1Yesterday();
-            int u1ps=p1.getPower1Stolen();
-            double sum=u1p+u1ps;
-            if(u1p/sum<=0.3){//剩余太少，不能偷
-				p1.setCanPower1Steal(0);
-				session.update(p1);
-				response.setStatus(201);
+            int u2py=u2.getPower1Yesterday();//剩余能量
+            int u2ps=u2.getPower1Stolen();	//目前为止已经被偷的能量
+            double sum=u2py+u2ps;	//昨天生成的能量
+            if(u2py/sum<=0.3){//剩余太少，不能偷
+				u2.setPower1CanSteal(0);
+				session.update(u2);
+				response.setStatus(CANTSTEAL);//不能偷
             }else{
                 //从剩余的能量中减去总能量的30%之后再乘0.5，获取一个随机值
-                int randNum =(int)(Math.random() * (( u1p-sum*0.3)*0.5 + 1));
+                int randNum =(int)(Math.random() * (( u2py-sum*0.3)*0.5 + 1));
                 //已被偷的能量加上
-                p1.setPower1Stolen(p1.getPower1Stolen()+randNum);
+				u2.setPower1Stolen(u2.getPower1Stolen()+randNum);
                 //剩余能量减去
-                p1.setPower1Yesterday(p1.getPower1Yesterday()-randNum);
-				int ppp=p2.getPower()+randNum;
-				p2.setPower(ppp);
-
-				u1.setPower(p1.getPower());
-				u2.setPower(ppp);
+				u2.setPower1Yesterday(u2.getPower1Yesterday()-randNum);
+				//u1的总能量加上
+				u1.setPower(u1.getPower()+randNum);
 
 				AlternateRecord alternateRecord=new AlternateRecord();
-				alternateRecord.setUser1Id(getUser1id());
-				alternateRecord.setUser2Id(getUser2id());
+				alternateRecord.setUser1id(getUser1id());
+				alternateRecord.setUser2id(getUser2id());
 				alternateRecord.setPower(randNum);
 				alternateRecord.setType(Integer.parseInt(TOMATO_POWER));
 				alternateRecord.setTime(new Timestamp(System.currentTimeMillis()));
+
+
+
 				result=new Gson().toJson(alternateRecord);
 				session.save(alternateRecord);
 				//如果偷完之后能量太少，就设置为不能偷
-				if(p1.getPower()/(p1.getPower1Yesterday()+p1.getPower1Stolen())<0.3){
-					p1.setCanPower1Steal(0);
+				if(u2.getPower1Yesterday()/sum<0.3){
+					u2.setPower1CanSteal(0);
 				}
-				session.update(p1);
-				session.update(p2);
 				session.update(u1);
 				session.update(u2);
 				response.setStatus(200);
             }
 		}else if(getPowertype().equals(CUSTOM_POWER)){//如果偷的是习惯能量
-            int u1p=p1.getPower2Yesterday();
-            int u1ps=p1.getPower2Stolen();
-            double sum=u1p+u1ps;
-            if(u1p/sum<=0.3){//剩余太少，不能偷
-				p1.setCanPower2Steal(0);
-				session.update(p1);
-				response.setStatus(201);
+            int u2py=u2.getPower2Yesterday();
+            int u2ps=u2.getPower2Stolen();
+            double sum=u2py+u2ps;
+            if(u2py/sum<=0.3){//剩余太少，不能偷
+				u2.setPower2CanSteal(0);
+				session.update(u2);
+				response.setStatus(CANTSTEAL);
             }else{
                 //从剩余的能量中减去总能量的30%之后再乘0.5，获取一个随机值
-                int randNum =(int)(Math.random() * (( u1p-sum*0.3)*0.5 + 1));
+                int randNum =(int)(Math.random() * (( u2py-sum*0.3)*0.5 + 1));
                 //已被偷的能量加上
-                p1.setPower2Stolen(p1.getPower2Stolen()+randNum);
+                u2.setPower2Stolen(u2.getPower2Stolen()+randNum);
                 //剩余能量减去
-                p1.setPower2Yesterday(p1.getPower2Yesterday()-randNum);
-                int ppp=p2.getPower()+randNum;
-                p2.setPower(ppp);
-
-				u1.setPower(p1.getPower());
-				u2.setPower(ppp);
+                u2.setPower2Yesterday(u2.getPower2Yesterday()-randNum);
+				u1.setPower(u1.getPower()+randNum);
 				//产生一条记录
 				AlternateRecord alternateRecord=new AlternateRecord();
-				alternateRecord.setUser1Id(getUser1id());
-				alternateRecord.setUser2Id(getUser2id());
+				alternateRecord.setUser1id(getUser1id());
+				alternateRecord.setUser2id(getUser2id());
 				alternateRecord.setPower(randNum);
 				alternateRecord.setType(Integer.parseInt(CUSTOM_POWER));
 				alternateRecord.setTime(new Timestamp(System.currentTimeMillis()));
 				result=new Gson().toJson(alternateRecord);
 				session.save(alternateRecord);
 				//如果偷完之后能量太少，就设置为不能偷
-				if(p1.getPower2Yesterday()/(p1.getPower2Yesterday()+p1.getPower2Stolen())<0.3){
-					p1.setCanPower2Steal(0);
+				if(u2.getPower2Yesterday()/sum<0.3){
+					u2.setPower2CanSteal(0);
 				}
-                session.update(p1);
-                session.update(p2);
 				session.update(u1);
 				session.update(u2);
-
 				response.setStatus(200);
-
             }
 		}else if(getPowertype().equals(WATERING)){//如果是浇水
-			p2.setPower(p2.getPower()+10);
 			u2.setPower(u2.getPower()+10);
 			AlternateRecord alternateRecord=new AlternateRecord();
-			alternateRecord.setUser1Id(getUser1id());
-			alternateRecord.setUser2Id(getUser2id());
+			alternateRecord.setUser1id(getUser1id());
+			alternateRecord.setUser2id(getUser2id());
 			alternateRecord.setPower(10);
 			alternateRecord.setType(Integer.parseInt(WATERING));
 			alternateRecord.setTime(new Timestamp(System.currentTimeMillis()));
 			result=new Gson().toJson(alternateRecord);
 			session.save(alternateRecord);
-			session.update(p2);
 			session.update(u2);
 			response.setStatus(200);
 
@@ -273,6 +260,12 @@ public class UserAction extends ActionSupport {
 	 	return null;
 	}
 
+	/**
+	 * 获取排行榜
+	 * 在此一并把朋友的power信息获取了
+	 * @return
+	 * @throws IOException
+	 */
 	public String doGetRank() throws IOException {
 		HttpServletRequest request=ServletActionContext.getRequest();
 		HttpServletResponse response=ServletActionContext.getResponse();
@@ -280,11 +273,43 @@ public class UserAction extends ActionSupport {
 		response.setContentType("application/json; charset=utf-8");
 		Session session=HibernateUtil.getSessionFactory().openSession();
 		session.beginTransaction();
-		String query_str="select new User(userid,name,icon,power,tomatoN) from User order by power desc ";
+		String query_str="select new User(userid,name,icon,power,tomatoN,power1Yesterday,power2Yesterday,power1CanSteal,power2CanSteal) from User order by power desc ";
 		Query<User> query=session.createQuery(query_str);
-		List<User> list=query.getResultList();
+		List<User> userList=query.getResultList();
+
+		//获取到我今天所有的对别的交互记录
+		String query_str2="from AlternateRecord a where a.user1id=:user1id and a.time>:time";
+		Query<AlternateRecord> query2=session.createQuery(query_str2);
+		query2.setParameter("user1id", getUserid());//我的id
+		Timestamp today0clock=new Timestamp(System.currentTimeMillis());
+		today0clock.setHours(0);
+		today0clock.setMinutes(0);
+		query2.setParameter("time",today0clock);
+		List<AlternateRecord> alternateRecordList=query2.getResultList();
+		//以user2id为key放在一个map中
+		Map<Long,AlternateRecord> alternateRecordMap=new HashMap<Long, AlternateRecord>();
+		for(int i=0;i<alternateRecordList.size();i++){
+			alternateRecordMap.put(alternateRecordList.get(i).getUser2id(),alternateRecordList.get(i));
+		}
+		//对于userList,如果其userid在map中存在，说明
+		User user;
+		for(int i=0;i<userList.size();i++){
+			user=userList.get(i);
+			if(alternateRecordMap.containsKey(user.getUserid())){
+				int type=alternateRecordMap.get(user.getUserid()).getType();
+				if(type==1){	//如果有交互那一定不能再偷了
+					user.setPower1CanSteal(0);
+				}else if(type==2){
+					user.setPower2CanSteal(0);
+				}else if(user.getPower1Yesterday()!=0){	//如果没有过交互，且昨天产生了能量，那么可以偷
+					user.setPower1CanSteal(1);
+				}else if(user.getPower2Yesterday()!=0){
+					user.setPower2CanSteal(1);
+				}
+			}
+		}
 		Gson gson=new Gson();
-		String result=gson.toJson(list);
+		String result=gson.toJson(userList);
 		response.setStatus(200);
 		PrintWriter writer;
 		writer=response.getWriter();
@@ -296,56 +321,12 @@ public class UserAction extends ActionSupport {
 		return null;
 	}
 
+
 	/**
-	 * 获取朋友的信息
+	 * 获取交互
 	 * @return
 	 * @throws IOException
 	 */
-	public String doGetFriendInfo() throws IOException {
-		HttpServletRequest request=ServletActionContext.getRequest();
-		HttpServletResponse response=ServletActionContext.getResponse();
-		request.getAttribute("user1id");
-		request.getAttribute("user2id");
-		response.setCharacterEncoding("UTF-8");
-		response.setContentType("application/json; charset=utf-8");
-		Session session=HibernateUtil.getSessionFactory().openSession();
-		session.beginTransaction();
-		//先查一下交互记录，如果有user1对user2的交互了，就不让他偷了
-		String query_str="from AlternateRecord a where a.user1Id=:user1Id and a.user2Id=:user2Id and a.time>:time";
-		Query<AlternateRecord> query=session.createQuery(query_str);
-		query.setParameter("user1Id", getUser1id());
-		query.setParameter("user2Id", getUser2id());
-		Timestamp today0clock=new Timestamp(System.currentTimeMillis());
-		today0clock.setHours(0);
-		today0clock.setMinutes(0);
-		query.setParameter("time",today0clock);
-		List<AlternateRecord> list=query.getResultList();
-
-		Power p=session.get(Power.class,new Long(getUser2id()));
-		session.getTransaction().commit();
-		session.close();
-		if(list.size()==0){
-
-		}else{
-			for(AlternateRecord a:list){
-				if(a.getType()==1){
-					p.setCanPower1Steal(0);
-				}else if(a.getType()==2){
-					p.setCanPower2Steal(0);
-				}
-			}
-		}
-		response.setStatus(200);
-		PrintWriter writer;
-		writer=response.getWriter();
-		p.setDate(null);
-		writer.write(new Gson().toJson(p));
-		writer.flush();
-		writer.close();
-		return null;
-	}
-
-
 	public String doGetRecord() throws IOException {
 		HttpServletRequest request=ServletActionContext.getRequest();
 		HttpServletResponse response=ServletActionContext.getResponse();
@@ -354,10 +335,10 @@ public class UserAction extends ActionSupport {
 		response.setContentType("application/json; charset=utf-8");
 		Session session=HibernateUtil.getSessionFactory().openSession();
 		session.beginTransaction();
-		String queryStr="from AlternateRecord a where a.user2Id=:user2id";
-		Query<AlternateRecord> query=session.createQuery(queryStr);
+		String queryStr="from OnesRecord  where user2id=:user2id";
+		Query<OnesRecord> query=session.createQuery(queryStr);
 		query.setParameter("user2id",getUserid());
-		List<AlternateRecord> list=query.getResultList();
+		List<OnesRecord> list=query.getResultList();
 		if(list.size()!=0){
 			PrintWriter printWriter=response.getWriter();
 			printWriter.write(new Gson().toJson(list));

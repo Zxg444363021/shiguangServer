@@ -11,47 +11,50 @@
         <property name="phone">
             <column name="phone" sql-type="varchar(13)" length="13" not-null="true"/>
         </property>
-        <property name="email">
-            <column name="email" sql-type="varchar(45)" length="45" />
-        </property>
         <property name="password">
             <column name="password" sql-type="varchar(45)" length="45" not-null="true"/>
         </property>
         <property name="name">
-            <column name="name" sql-type="varchar(45)" length="45" />
+            <column name="name" sql-type="varchar(45)" length="45" not-null="true"/>
         </property>
         <property name="icon">
-            <column name="icon" sql-type="varchar(80)" length="80"/>
-        </property>
-        <property name="power">
-            <column name="power" sql-type="int(11)" not-null="true"/>
+            <column name="icon" sql-type="varchar(80)" length="80" not-null="true"/>
         </property>
         <property name="wxid">
-            <column name="wxid" sql-type="varchar(45)" length="45" />
-        </property>
-        <property name="qqid">
-            <column name="qqid" sql-type="varchar(45)" length="45"/>
-        </property>
-        <property name="sinaid">
-            <column name="sinaid" sql-type="varchar(45)" length="45"/>
+            <column name="wxid" sql-type="varchar(45)" length="45" not-null="true"/>
         </property>
         <property name="wxname">
-            <column name="wxname" sql-type="varchar(45)" length="45"/>
+            <column name="wxname" sql-type="varchar(45)" length="45" not-null="true"/>
         </property>
-        <property name="qqname">
-            <column name="qqname" sql-type="varchar(45)" length="45"/>
-        </property>
-        <property name="sinaname">
-            <column name="sinaname" sql-type="varchar(45)" length="45"/>
+        <property name="power">
+            <column name="power" sql-type="int(11)"/>
         </property>
         <property name="tomatoN">
             <column name="tomato_n" sql-type="int(11)"/>
         </property>
-        <property name="powerToday">
-            <column name="power_today" sql-type="int(11)"/>
+        <property name="power1Today">
+            <column name="power1_today" sql-type="int(11)"/>
         </property>
-        <property name="canSteal">
-            <column name="canSteal" sql-type="int(1)" />
+        <property name="power2Today">
+            <column name="power2_today" sql-type="int(11)"/>
+        </property>
+        <property name="power1Yesterday">
+            <column name="power1_yesterday" sql-type="int(11)"/>
+        </property>
+        <property name="power2Yesterday">
+            <column name="power2_yesterday" sql-type="int(11)"/>
+        </property>
+        <property name="power1Stolen">
+            <column name="power1_stolen" sql-type="int(11)"/>
+        </property>
+        <property name="power2Stolen">
+            <column name="power2_stolen" sql-type="int(11)"/>
+        </property>
+        <property name="power1CanSteal">
+            <column name="power1_can_steal" sql-type="int(11)"/>
+        </property>
+        <property name="power2CanSteal">
+            <column name="power2_can_steal" sql-type="int(11)"/>
         </property>
     </class>
 </hibernate-mapping>

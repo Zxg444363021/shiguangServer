@@ -1,40 +1,46 @@
 package entity;
 
+import javax.jws.soap.SOAPBinding;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
 /**
- * Created by Administrator on 2017/5/26.
+ * Created by Administrator on 2017/7/27.
  */
 @Entity
 public class User {
     private long userid;
     private String phone;
-    private String email;
     private String password;
     private String name;
     private String icon;
-    private Integer power;
     private String wxid;
-    private String qqid;
-    private String sinaid;
     private String wxname;
-    private String qqname;
-    private String sinaname;
-    private Integer tomatoN;
-    private Integer powerToday;
-    private Integer canSteal;
+    private int power;
+    private int tomatoN;
+    private int power1Today;
+    private int power2Today;
+    private int power1Yesterday;
+    private int power2Yesterday;
+    private int power1Stolen;
+    private int power2Stolen;
+    private int power1CanSteal;
+    private int power2CanSteal;
 
     public User(){}
 
-    public User(long userid, String name, String icon, Integer power, Integer tomatoN) {
+    public User(long userid, String name, String icon, int power, int tomatoN, int power1Yesterday, int power2Yesterday, int power1CanSteal, int power2CanSteal) {
         this.userid = userid;
         this.name = name;
         this.icon = icon;
         this.power = power;
         this.tomatoN = tomatoN;
+        this.power1Yesterday = power1Yesterday;
+        this.power2Yesterday = power2Yesterday;
+        this.power1CanSteal = power1CanSteal;
+        this.power2CanSteal = power2CanSteal;
     }
 
     @Id
@@ -55,16 +61,6 @@ public class User {
 
     public void setPhone(String phone) {
         this.phone = phone;
-    }
-
-    @Basic
-    @Column(name = "email", nullable = true, length = 45)
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     @Basic
@@ -98,16 +94,6 @@ public class User {
     }
 
     @Basic
-    @Column(name = "power", nullable = true)
-    public Integer getPower() {
-        return power;
-    }
-
-    public void setPower(Integer power) {
-        this.power = power;
-    }
-
-    @Basic
     @Column(name = "wxid", nullable = true, length = 45)
     public String getWxid() {
         return wxid;
@@ -115,26 +101,6 @@ public class User {
 
     public void setWxid(String wxid) {
         this.wxid = wxid;
-    }
-
-    @Basic
-    @Column(name = "qqid", nullable = true, length = 45)
-    public String getQqid() {
-        return qqid;
-    }
-
-    public void setQqid(String qqid) {
-        this.qqid = qqid;
-    }
-
-    @Basic
-    @Column(name = "sinaid", nullable = true, length = 45)
-    public String getSinaid() {
-        return sinaid;
-    }
-
-    public void setSinaid(String sinaid) {
-        this.sinaid = sinaid;
     }
 
     @Basic
@@ -148,43 +114,103 @@ public class User {
     }
 
     @Basic
-    @Column(name = "qqname", nullable = true, length = 45)
-    public String getQqname() {
-        return qqname;
+    @Column(name = "power", nullable = false)
+    public int getPower() {
+        return power;
     }
 
-    public void setQqname(String qqname) {
-        this.qqname = qqname;
-    }
-
-    @Basic
-    @Column(name = "sinaname", nullable = true, length = 45)
-    public String getSinaname() {
-        return sinaname;
-    }
-
-    public void setSinaname(String sinaname) {
-        this.sinaname = sinaname;
+    public void setPower(int power) {
+        this.power = power;
     }
 
     @Basic
-    @Column(name = "tomato_n", nullable = true)
-    public Integer getTomatoN() {
+    @Column(name = "tomato_n", nullable = false)
+    public int getTomatoN() {
         return tomatoN;
     }
 
-    public void setTomatoN(Integer tomatoN) {
+    public void setTomatoN(int tomatoN) {
         this.tomatoN = tomatoN;
     }
 
     @Basic
-    @Column(name = "power_today", nullable = true)
-    public Integer getPowerToday() {
-        return powerToday;
+    @Column(name = "power1_today", nullable = false)
+    public int getPower1Today() {
+        return power1Today;
     }
 
-    public void setPowerToday(Integer powerToday) {
-        this.powerToday = powerToday;
+    public void setPower1Today(int power1Today) {
+        this.power1Today = power1Today;
+    }
+
+    @Basic
+    @Column(name = "power2_today", nullable = false)
+    public int getPower2Today() {
+        return power2Today;
+    }
+
+    public void setPower2Today(int power2Today) {
+        this.power2Today = power2Today;
+    }
+
+    @Basic
+    @Column(name = "power1_yesterday", nullable = false)
+    public int getPower1Yesterday() {
+        return power1Yesterday;
+    }
+
+    public void setPower1Yesterday(int power1Yesterday) {
+        this.power1Yesterday = power1Yesterday;
+    }
+
+    @Basic
+    @Column(name = "power2_yesterday", nullable = false)
+    public int getPower2Yesterday() {
+        return power2Yesterday;
+    }
+
+    public void setPower2Yesterday(int power2Yesterday) {
+        this.power2Yesterday = power2Yesterday;
+    }
+
+    @Basic
+    @Column(name = "power1_stolen", nullable = false)
+    public int getPower1Stolen() {
+        return power1Stolen;
+    }
+
+    public void setPower1Stolen(int power1Stolen) {
+        this.power1Stolen = power1Stolen;
+    }
+
+    @Basic
+    @Column(name = "power2_stolen", nullable = false)
+    public int getPower2Stolen() {
+        return power2Stolen;
+    }
+
+    public void setPower2Stolen(int power2Stolen) {
+        this.power2Stolen = power2Stolen;
+    }
+
+    @Basic
+    @Column(name = "power1_can_steal", nullable = false)
+    public int getPower1CanSteal() {
+        return power1CanSteal;
+    }
+
+    public void setPower1CanSteal(int power1CanSteal) {
+        this.power1CanSteal = power1CanSteal;
+    }
+
+    @Basic
+    @Column(name = "power2_can_steal", nullable = false)
+    public int getPower2CanSteal() {
+        return power2CanSteal;
+    }
+
+    public void setPower2CanSteal(int power2CanSteal) {
+        this.power2CanSteal = power2CanSteal;
     }
 
     @Override
@@ -195,20 +221,22 @@ public class User {
         User user = (User) o;
 
         if (userid != user.userid) return false;
+        if (power != user.power) return false;
+        if (tomatoN != user.tomatoN) return false;
+        if (power1Today != user.power1Today) return false;
+        if (power2Today != user.power2Today) return false;
+        if (power1Yesterday != user.power1Yesterday) return false;
+        if (power2Yesterday != user.power2Yesterday) return false;
+        if (power1Stolen != user.power1Stolen) return false;
+        if (power2Stolen != user.power2Stolen) return false;
+        if (power1CanSteal != user.power1CanSteal) return false;
+        if (power2CanSteal != user.power2CanSteal) return false;
         if (phone != null ? !phone.equals(user.phone) : user.phone != null) return false;
-        if (email != null ? !email.equals(user.email) : user.email != null) return false;
         if (password != null ? !password.equals(user.password) : user.password != null) return false;
         if (name != null ? !name.equals(user.name) : user.name != null) return false;
         if (icon != null ? !icon.equals(user.icon) : user.icon != null) return false;
-        if (power != null ? !power.equals(user.power) : user.power != null) return false;
         if (wxid != null ? !wxid.equals(user.wxid) : user.wxid != null) return false;
-        if (qqid != null ? !qqid.equals(user.qqid) : user.qqid != null) return false;
-        if (sinaid != null ? !sinaid.equals(user.sinaid) : user.sinaid != null) return false;
         if (wxname != null ? !wxname.equals(user.wxname) : user.wxname != null) return false;
-        if (qqname != null ? !qqname.equals(user.qqname) : user.qqname != null) return false;
-        if (sinaname != null ? !sinaname.equals(user.sinaname) : user.sinaname != null) return false;
-        if (tomatoN != null ? !tomatoN.equals(user.tomatoN) : user.tomatoN != null) return false;
-        if (powerToday != null ? !powerToday.equals(user.powerToday) : user.powerToday != null) return false;
 
         return true;
     }
@@ -217,29 +245,21 @@ public class User {
     public int hashCode() {
         int result = (int) (userid ^ (userid >>> 32));
         result = 31 * result + (phone != null ? phone.hashCode() : 0);
-        result = 31 * result + (email != null ? email.hashCode() : 0);
         result = 31 * result + (password != null ? password.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (icon != null ? icon.hashCode() : 0);
-        result = 31 * result + (power != null ? power.hashCode() : 0);
         result = 31 * result + (wxid != null ? wxid.hashCode() : 0);
-        result = 31 * result + (qqid != null ? qqid.hashCode() : 0);
-        result = 31 * result + (sinaid != null ? sinaid.hashCode() : 0);
         result = 31 * result + (wxname != null ? wxname.hashCode() : 0);
-        result = 31 * result + (qqname != null ? qqname.hashCode() : 0);
-        result = 31 * result + (sinaname != null ? sinaname.hashCode() : 0);
-        result = 31 * result + (tomatoN != null ? tomatoN.hashCode() : 0);
-        result = 31 * result + (powerToday != null ? powerToday.hashCode() : 0);
+        result = 31 * result + power;
+        result = 31 * result + tomatoN;
+        result = 31 * result + power1Today;
+        result = 31 * result + power2Today;
+        result = 31 * result + power1Yesterday;
+        result = 31 * result + power2Yesterday;
+        result = 31 * result + power1Stolen;
+        result = 31 * result + power2Stolen;
+        result = 31 * result + power1CanSteal;
+        result = 31 * result + power2CanSteal;
         return result;
-    }
-
-    @Basic
-    @Column(name = "canSteal", nullable = true)
-    public Integer getCanSteal() {
-        return canSteal;
-    }
-
-    public void setCanSteal(Integer canSteal) {
-        this.canSteal = canSteal;
     }
 }
