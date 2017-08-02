@@ -23,15 +23,16 @@ import org.hibernate.Session;
 import com.opensymphony.xwork2.ActionSupport;
 
 import entity.User;
+import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import util.HibernateUtil;
 
 public class UserAction extends ActionSupport {
 	private static final String BASEURL="http://121.42.140.71:8080/shiguangServer/";
-	public static final String TOMATO_POWER="1";
-	public static final String CUSTOM_POWER="2";
-	public static final String WATERING="3";
-	public static final int CANTSTEAL=201;
+	private static final String TOMATO_POWER="1";
+	private static final String CUSTOM_POWER="2";
+	private static final String WATERING="3";
+	private static final int CANTSTEAL=201;
 	private String phone;
 	private Long user1id;
 	private File mPhoto;
@@ -39,8 +40,19 @@ public class UserAction extends ActionSupport {
 	private Long user2id;
 	private String powertype;
 	private Long userid;
+	private int tomatoTime;	//番茄时间单位分钟
 
-    public Long getUserid() {
+	private int getTomatoTime() {
+		return tomatoTime;
+	}
+
+	public void setTomatoTime(int tomatoTime) {
+		this.tomatoTime = tomatoTime;
+	}
+
+
+
+    private Long getUserid() {
         return userid;
     }
 
@@ -48,7 +60,7 @@ public class UserAction extends ActionSupport {
         this.userid = userid;
     }
 
-    public String getPowertype() {
+    private String getPowertype() {
 		return powertype;
 	}
 
@@ -56,7 +68,7 @@ public class UserAction extends ActionSupport {
 		this.powertype = powertype;
 	}
 
-    public Long getUser2id() {
+    private Long getUser2id() {
         return user2id;
     }
 
@@ -64,7 +76,7 @@ public class UserAction extends ActionSupport {
         this.user2id = user2id;
     }
 
-    public String getName() {
+    private String getName() {
 		return name;
 	}
 
@@ -72,14 +84,14 @@ public class UserAction extends ActionSupport {
 		this.name = name;
 	}
 
-	public String getPhone() {
+	private String getPhone() {
 		return phone;
 	}
 	public void setPhone(String phone) {
 		this.phone = phone;
 	}
 
-    public Long getUser1id() {
+    private Long getUser1id() {
         return user1id;
     }
 
@@ -87,7 +99,7 @@ public class UserAction extends ActionSupport {
         this.user1id = user1id;
     }
 
-    public File getmPhoto() {
+    private File getmPhoto() {
 		return mPhoto;
 	}
 	public void setmPhoto(File mPhoto) {
@@ -159,8 +171,8 @@ public class UserAction extends ActionSupport {
 		request.getAttribute("powertype");
 
 		Session session=HibernateUtil.getSessionFactory().openSession();
-		session.beginTransaction();
-		//主偷用户
+		Transaction transaction=session.beginTransaction();
+		//主偷用户（就是我）
 		User u1=session.get(User.class,new Long(getUser1id()));
 		//被偷用户
 		User u2=session.get(User.class,new Long(getUser2id()));
@@ -191,8 +203,6 @@ public class UserAction extends ActionSupport {
 				alternateRecord.setPower(randNum);
 				alternateRecord.setType(Integer.parseInt(TOMATO_POWER));
 				alternateRecord.setTime(new Timestamp(System.currentTimeMillis()));
-
-
 
 				result=new Gson().toJson(alternateRecord);
 				session.save(alternateRecord);
@@ -248,14 +258,19 @@ public class UserAction extends ActionSupport {
 			result=new Gson().toJson(alternateRecord);
 			session.save(alternateRecord);
 			session.update(u2);
-			response.setStatus(200);
 
+			response.setStatus(200);
 		}
 		PrintWriter printWriter=response.getWriter();
 		printWriter.write(result);
 		printWriter.flush();
 		printWriter.close();
-        session.getTransaction().commit();
+		try{
+			transaction.commit();
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+
 		session.close();
 	 	return null;
 	}
@@ -273,7 +288,7 @@ public class UserAction extends ActionSupport {
 		response.setContentType("application/json; charset=utf-8");
 		Session session=HibernateUtil.getSessionFactory().openSession();
 		session.beginTransaction();
-		String query_str="select new User(userid,name,icon,power,tomatoN,power1Yesterday,power2Yesterday,power1CanSteal,power2CanSteal) from User order by power desc ";
+		String query_str="select new User(userid,name,icon,power,tomatoN,power1Yesterday,power2Yesterday,power1CanSteal,power2CanSteal) from User  order by power desc ";
 		Query<User> query=session.createQuery(query_str);
 		List<User> userList=query.getResultList();
 
@@ -287,26 +302,33 @@ public class UserAction extends ActionSupport {
 		query2.setParameter("time",today0clock);
 		List<AlternateRecord> alternateRecordList=query2.getResultList();
 		//以user2id为key放在一个map中
-		Map<Long,AlternateRecord> alternateRecordMap=new HashMap<Long, AlternateRecord>();
+		Map<String,AlternateRecord> alternateRecordMap=new HashMap<String, AlternateRecord>();
 		for(int i=0;i<alternateRecordList.size();i++){
-			alternateRecordMap.put(alternateRecordList.get(i).getUser2id(),alternateRecordList.get(i));
+			alternateRecordMap.put(
+					String.valueOf(alternateRecordList.get(i).getUser2id())
+							+String.valueOf(alternateRecordList.get(i).getType())
+					,alternateRecordList.get(i));
 		}
 		//对于userList,如果其userid在map中存在，说明
 		User user;
 		for(int i=0;i<userList.size();i++){
 			user=userList.get(i);
-			if(alternateRecordMap.containsKey(user.getUserid())){
-				int type=alternateRecordMap.get(user.getUserid()).getType();
-				if(type==1){	//如果有交互那一定不能再偷了
-					user.setPower1CanSteal(0);
-				}else if(type==2){
-					user.setPower2CanSteal(0);
-				}else if(user.getPower1Yesterday()!=0){	//如果没有过交互，且昨天产生了能量，那么可以偷
-					user.setPower1CanSteal(1);
-				}else if(user.getPower2Yesterday()!=0){
-					user.setPower2CanSteal(1);
-				}
+			//如果已经有过交互记录了那就不能偷了
+			if(alternateRecordMap.containsKey(String.valueOf(user.getUserid())+"1")){
+				//如果有交互那一定不能再偷了
+				user.setPower1CanSteal(0);
 			}
+			if(alternateRecordMap.containsKey(String.valueOf(user.getUserid())+"2")){
+				user.setPower2CanSteal(0);
+			}
+			//如果没有过交互记录，但是昨天的能量是0，也不能偷了
+			if(user.getPower1Yesterday()==0){
+					user.setPower1CanSteal(0);
+			}
+			if(user.getPower2Yesterday()==0){
+					user.setPower2CanSteal(0);
+			}
+
 		}
 		Gson gson=new Gson();
 		String result=gson.toJson(userList);
@@ -345,6 +367,106 @@ public class UserAction extends ActionSupport {
 			printWriter.flush();
 			printWriter.close();
 		}
+		session.getTransaction().commit();
+		session.close();
+		return null;
+	}
+
+	/**
+	 * 番茄时间到了,或者说收获了番茄能量之后自动上传番茄。
+	 * @return
+	 * @throws IOException
+	 */
+	public String doAddPower() throws IOException{
+		HttpServletRequest request=ServletActionContext.getRequest();
+		HttpServletResponse response=ServletActionContext.getResponse();
+		request.getAttribute("userid");
+		request.getAttribute("tomatoTime");
+		request.getAttribute("powertype");
+		response.setCharacterEncoding("UTF-8");
+		response.setContentType("application/json; charset=utf-8");
+		Session session=HibernateUtil.getSessionFactory().openSession();
+		session.beginTransaction();
+
+		User user=session.get(User.class,new Long(getUserid()));
+		if(getPowertype().equals(TOMATO_POWER)){
+			int tomatoTime=getTomatoTime();
+			int tomatoNum=tomatoTime/25;
+			int power=0;
+			switch (tomatoNum){
+				case 1:
+					power=50;
+					break;
+				case 2:
+					power=100;
+					break;
+				case 3:
+					power=150;
+					break;
+				case 4:
+					power=200;
+					break;
+				case 5:
+					power=254;
+					break;
+				default:
+					power=254;	//最多254g
+					break;
+			}
+			user.setTomatoN(user.getTomatoN()+tomatoNum);	//番茄数立即修改
+			user.setPower1Today(user.getPower1Today()+power);	//能量等到明天收获
+			session.save(user);
+			response.setStatus(200);
+		}else if(getPowertype().equals(CUSTOM_POWER)){
+			//一次习惯打卡可以获得20g能量
+			user.setPower2Today(user.getPower2Today()+20);
+			session.save(user);
+			response.setStatus(200);
+		}
+
+		session.getTransaction().commit();
+		session.close();
+		return null;
+	}
+
+	/**
+	 * 收获自己的能量,返回收到的能量数
+	 * @return
+	 * @throws IOException
+	 */
+	public String doGainPower() throws IOException{
+		HttpServletRequest request=ServletActionContext.getRequest();
+		HttpServletResponse response=ServletActionContext.getResponse();
+		request.getAttribute("userid");
+		request.getAttribute("powertype");
+		response.setCharacterEncoding("UTF-8");
+		response.setContentType("application/json; charset=utf-8");
+		Session session=HibernateUtil.getSessionFactory().openSession();
+		session.beginTransaction();
+		User user=session.get(User.class,new Long(getUserid()));
+		String result="";
+		if(getPowertype().equals(TOMATO_POWER)){
+			int gainPower=user.getPower1Yesterday();
+			user.setPower(user.getPower()+gainPower);
+			user.setPower1Yesterday(0);
+
+			session.save(user);
+			response.setStatus(200);
+			result=String.valueOf(gainPower);
+
+		}else if(getPowertype().equals(CUSTOM_POWER)){
+			int gainPower=user.getPower2Yesterday();
+			user.setPower(user.getPower()+user.getPower2Yesterday()+gainPower);
+			user.setPower2Yesterday(0);
+			session.save(user);
+			response.setStatus(200);
+			result=String.valueOf(gainPower);
+		}
+
+		PrintWriter printWriter=response.getWriter();
+		printWriter.write(result);
+		printWriter.flush();
+		printWriter.close();
 		session.getTransaction().commit();
 		session.close();
 		return null;

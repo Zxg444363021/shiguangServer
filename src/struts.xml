@@ -15,7 +15,8 @@
         <action name="doPostIcon" class="action.UserAction" method="doPostIcon"/>
         <action name="doStealPower" class="action.UserAction" method="doStealPower"/>
         <action name="doGetRank" class="action.UserAction" method="doGetRank"/>
-        <!--<action name="doGetFriendInfo" class="action.UserAction" method="doGetFriendInfo"/>-->
         <action name="doGetRecord" class="action.UserAction" method="doGetRecord"/>
+        <action name="doAddPower" class="action.UserAction" method="doAddPower"/>
+        <action name="doGainPower" class="action.UserAction" method="doGainPower"/>
     </package>
 </struts>

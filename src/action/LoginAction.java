@@ -7,6 +7,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import bean.ResponseBean;
 import org.apache.struts2.ServletActionContext;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -17,17 +18,18 @@ import com.opensymphony.xwork2.ActionSupport;
 import entity.User;
 import util.HibernateUtil;
 
+
 public class LoginAction extends ActionSupport {
 	private String phone;
 	private String password;
-	public String getPhone() {
+	private  String getPhone() {
 		return phone;
 	}
 	public void setPhone(String phone) {
 		this.phone = phone;
 	}
 	
-	public String getPassword() {
+	private String getPassword() {
 		return password;
 	}
 	public void setPassword(String password) {
@@ -71,21 +73,33 @@ public class LoginAction extends ActionSupport {
 		Session session=HibernateUtil.getSessionFactory().openSession();
 		session.beginTransaction();
 		PrintWriter writer=response.getWriter(); 
-		User p=checkAccount(getPhone());
-		if(p!=null){
-			if(p.getPassword().equals(getPassword())){
-				p.setPassword(null);
-				response.setStatus(200);
+		User user=checkAccount(getPhone());
+		ResponseBean responseBean=new ResponseBean();
+		response.setStatus(200);
+		if(user!=null){
+			if(user.getPassword().equals(getPassword())){
+				user.setPassword(null);
+				responseBean.setCode(ResponseBean.LOGIN_SUCC);
+				responseBean.setMessage("200");
+				responseBean.setUser(user);
 				Gson gson=new Gson();
-				String result=gson.toJson(p);
+				String result=gson.toJson(responseBean);
 				writer.write(result);
 				System.out.println("login success");
 			}else{
-				response.setStatus(201);
+				responseBean.setCode(ResponseBean.LOGIN_FAIL);
+				responseBean.setMessage("201");
+				Gson gson=new Gson();
+				String result=gson.toJson(responseBean);
+				writer.write(result);
 				System.out.println("login fail201");
 			}
 		}else{
-			response.setStatus(202);
+			responseBean.setCode(ResponseBean.LOGIN_FAIL);
+			responseBean.setMessage("202");
+			Gson gson=new Gson();
+			String result=gson.toJson(responseBean);
+			writer.write(result);
 			System.out.println("login fail202");
 		}
 		writer.flush();
