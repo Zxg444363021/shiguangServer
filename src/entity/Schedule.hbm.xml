@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="entity.Schedule" table="schedule" schema="shiguang">
+        <id name="idInServer">
+            <column name="id_in_server" sql-type="bigint(11)"/>
+        </id>
+        <property name="userid">
+            <column name="userid" sql-type="bigint(5)"/>
+        </property>
+        <property name="name">
+            <column name="name" sql-type="varchar(45)" length="45"/>
+        </property>
+        <property name="description">
+            <column name="description" sql-type="varchar(100)" length="100"/>
+        </property>
+        <property name="year">
+            <column name="year" sql-type="int(5)"/>
+        </property>
+        <property name="month">
+            <column name="month" sql-type="int(2)"/>
+        </property>
+        <property name="day">
+            <column name="day" sql-type="int(2)"/>
+        </property>
+        <property name="hour">
+            <column name="hour" sql-type="int(2)"/>
+        </property>
+        <property name="minute">
+            <column name="minute" sql-type="int(2)"/>
+        </property>
+        <property name="dayOfWeek">
+            <column name="day_of_week" sql-type="int(1)"/>
+        </property>
+        <property name="status">
+            <column name="status" sql-type="int(1)"/>
+        </property>
+        <property name="type">
+            <column name="type" sql-type="int(1)"/>
+        </property>
+        <property name="isDirty">
+            <column name="is_dirty" sql-type="int(1)"/>
+        </property>
+        <property name="lastModify">
+            <column name="last_modify" sql-type="datetime"/>
+        </property>
+        <property name="isDelete">
+            <column name="is_delete" sql-type="int(1)"/>
+        </property>
+    </class>
+</hibernate-mapping>

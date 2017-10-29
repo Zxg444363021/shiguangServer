@@ -1,14 +1,10 @@
 package entity;
 
-import javax.jws.soap.SOAPBinding;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-/**
- * Created by Administrator on 2017/7/27.
- */
 @Entity
 public class User {
     private long userid;
@@ -28,19 +24,20 @@ public class User {
     private int power2Stolen;
     private int power1CanSteal;
     private int power2CanSteal;
+    private String uuid;
+    private String token;
+    private Integer canBeStolen;
+    private Integer canSteal;
 
     public User(){}
 
-    public User(long userid, String name, String icon, int power, int tomatoN, int power1Yesterday, int power2Yesterday, int power1CanSteal, int power2CanSteal) {
+    public User(long userid, String name, String icon, int power, int tomatoN, String uuid) {
         this.userid = userid;
         this.name = name;
         this.icon = icon;
         this.power = power;
         this.tomatoN = tomatoN;
-        this.power1Yesterday = power1Yesterday;
-        this.power2Yesterday = power2Yesterday;
-        this.power1CanSteal = power1CanSteal;
-        this.power2CanSteal = power2CanSteal;
+        this.uuid = uuid;
     }
 
     @Id
@@ -213,6 +210,46 @@ public class User {
         this.power2CanSteal = power2CanSteal;
     }
 
+    @Basic
+    @Column(name = "uuid", nullable = true, length = 45)
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    @Basic
+    @Column(name = "token", nullable = true, length = 45)
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    @Basic
+    @Column(name = "can_be_stolen", nullable = true)
+    public Integer getCanBeStolen() {
+        return canBeStolen;
+    }
+
+    public void setCanBeStolen(Integer canBeStolen) {
+        this.canBeStolen = canBeStolen;
+    }
+
+    @Basic
+    @Column(name = "can_steal", nullable = true)
+    public Integer getCanSteal() {
+        return canSteal;
+    }
+
+    public void setCanSteal(Integer canSteal) {
+        this.canSteal = canSteal;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -237,6 +274,10 @@ public class User {
         if (icon != null ? !icon.equals(user.icon) : user.icon != null) return false;
         if (wxid != null ? !wxid.equals(user.wxid) : user.wxid != null) return false;
         if (wxname != null ? !wxname.equals(user.wxname) : user.wxname != null) return false;
+        if (uuid != null ? !uuid.equals(user.uuid) : user.uuid != null) return false;
+        if (token != null ? !token.equals(user.token) : user.token != null) return false;
+        if (canBeStolen != null ? !canBeStolen.equals(user.canBeStolen) : user.canBeStolen != null) return false;
+        if (canSteal != null ? !canSteal.equals(user.canSteal) : user.canSteal != null) return false;
 
         return true;
     }
@@ -260,6 +301,10 @@ public class User {
         result = 31 * result + power2Stolen;
         result = 31 * result + power1CanSteal;
         result = 31 * result + power2CanSteal;
+        result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
+        result = 31 * result + (token != null ? token.hashCode() : 0);
+        result = 31 * result + (canBeStolen != null ? canBeStolen.hashCode() : 0);
+        result = 31 * result + (canSteal != null ? canSteal.hashCode() : 0);
         return result;
     }
 }

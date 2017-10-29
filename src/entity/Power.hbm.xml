@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="entity.Power" table="power" schema="shiguang">
+        <id name="id">
+            <column name="id" sql-type="bigint(10)"/>
+        </id>
+        <property name="userid">
+            <column name="userid" sql-type="bigint(5)"/>
+        </property>
+        <property name="power">
+            <column name="power" sql-type="int(11)"/>
+        </property>
+        <property name="powerStolen">
+            <column name="power_stolen" sql-type="int(11)"/>
+        </property>
+        <property name="date">
+            <column name="date" sql-type="date"/>
+        </property>
+        <property name="canSteal">
+            <column name="can_steal" sql-type="int(1)"/>
+        </property>
+        <property name="uuid">
+            <column name="uuid" sql-type="varchar(45)" length="45" not-null="false"/>
+        </property>
+        <property name="powerType">
+            <column name="power_type" sql-type="int(1)" not-null="false"/>
+        </property>
+        <property name="hasGain">
+            <column name="has_gain" sql-type="int(1)" not-null="false"/>
+        </property>
+    </class>
+</hibernate-mapping>

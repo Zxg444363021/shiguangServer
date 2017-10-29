@@ -27,6 +27,12 @@
         <mapping class="entity.AlternateRecord"/>
         <mapping resource="entity/OnesRecord.hbm.xml"/>
         <mapping class="entity.OnesRecord"/>
+        <mapping class="entity.Power"/>
+        <mapping resource="entity/Power.hbm.xml"/>
+        <mapping resource="entity/Step.hbm.xml"/>
+        <mapping class="entity.Step"/>
+        <mapping class="entity.Schedule"/>
+        <mapping resource="entity/Schedule.hbm.xml"/>
         <!--<mapping resource="entity/Power.hbm.xml"/>-->
         <!--<mapping class="entity.Power"/>-->
 

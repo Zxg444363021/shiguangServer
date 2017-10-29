@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import bean.ResponseBean;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.apache.struts2.ServletActionContext;
@@ -40,15 +41,7 @@ public class RegistAction extends ActionSupport {
 	private String name;
 	private String identifyCodeC;//客户端传过来的验证码
 	private String identifyCodeS;//服务端生成的验证码
-	private String responseJson;
-	
-	public String getResponseJson() {
-		return responseJson;
-	}
 
-	public void setResponseJson(String responseJson) {
-		this.responseJson = responseJson;
-	}
 
 	public String getIdentifyCodeC() {
 		return identifyCodeC;
@@ -97,44 +90,7 @@ public class RegistAction extends ActionSupport {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	/**
-	 * 检查数据库中是否已经有了注册的手机号
-	 * @return
-	 * @throws IOException 
-	 */
-	public Boolean checkAccount() throws IOException{
-		boolean result;
-		HttpServletRequest request=ServletActionContext.getRequest();
-		HttpServletResponse response=ServletActionContext.getResponse();
-		request.getAttribute("phone");
-		//创建会话对象
-		Session session=HibernateUtil.getSessionFactory().getCurrentSession();
-		//开始一个事物
-		session.beginTransaction();
-		//查询手机号
-		String query_str="from User s where s.phone=:phone";
-		Query<User> query=session.createQuery(query_str);
-		query.setParameter("phone", getPhone());
-		List<User> list=query.getResultList();
-		if(list.size()!=0){//如果找到了就返回一个1
-			response.setStatus(HttpServletResponse.SC_OK);
-			PrintWriter writer=response.getWriter();
-			writer.write("1");
-			writer.flush();
-			writer.close();
-		}else{//如果没找到就返回一个0
-			response.setStatus(HttpServletResponse.SC_OK);
-			PrintWriter writer=response.getWriter();
-			writer.write("0");
-			writer.flush();
-			writer.close();
-			
-		}
-		
-		session.getTransaction().commit();//提交事务
-		HibernateUtil.getSessionFactory().close();//关闭会话工厂
-		return true;
-	}
+
 	
 	public Boolean checkAccount(String phone) throws IOException{
 		boolean result;
@@ -170,9 +126,12 @@ public class RegistAction extends ActionSupport {
 		
 		PrintWriter writer=response.getWriter();
 		request.getAttribute("phone");
+		ResponseBean responseBean=new ResponseBean();
+		Gson gson=new Gson();
 		if(checkAccount(getPhone())){
 			response.setStatus(200);
-			writer.write("-1");
+			responseBean.setCode("01");
+			writer.write(gson.toJson(responseBean));
 		}else{
 			SingleSendSms app = new SingleSendSms();
 			int randNum =100000+(int)(Math.random() * ((999999 - 100000) + 1));
@@ -182,17 +141,17 @@ public class RegistAction extends ActionSupport {
 			
 	        if(result==1){
 	        	response.setStatus(HttpServletResponse.SC_OK);
-	        
-				writer.write("1");	//发送成功了就返回一个1
-				writer.write(identifyCode);
-				    
+	        	responseBean.setCode("00");
+				writer.write(gson.toJson(responseBean));	//发送成功了就返回一个1
+
 				HttpSession sessionMap = request.getSession();  
 				sessionMap.setAttribute("identifyCodeS", identifyCode);
 				sessionMap.setAttribute("phone",getPhone());
 				System.out.println("验证码是："+identifyCode);
 	        }else{
 	        	response.setStatus(HttpServletResponse.SC_OK);
-				writer.write("0");	//发送失败了就返回一个0
+				responseBean.setCode("01");
+				writer.write(gson.toJson(responseBean));	//发送失败了就返回一个0
 	        }
 	       
 		}
@@ -231,6 +190,8 @@ public class RegistAction extends ActionSupport {
 		System.out.println("sessionMap中的"+sessionMap.getAttribute("identifyCodeS"));
 		System.out.println("sessionMap中的"+sessionMap.getAttribute("phone"));
 		PrintWriter write=response.getWriter();
+		ResponseBean responseBean=new ResponseBean();
+		Gson gson=new Gson();
 		//判断手机号
 		if(getPhone().equals(sessionMap.getAttribute("phone"))){
 			//判断验证码
@@ -243,19 +204,24 @@ public class RegistAction extends ActionSupport {
 				session.save(user1);
 				
 				response.setStatus(200);
-				Gson gson=new Gson();
+				responseBean.setCode("11");
 				User user2=new User();
 				user2.setUserid(user1.getUserid());
 				user2.setName(getName());
 				user2.setPhone(getPhone());
-				responseJson=gson.toJson(user2);
-				write.write(responseJson);
-				System.out.println(responseJson);
+				responseBean.setUser(user2);
+				write.write(gson.toJson(responseBean));
 			}else{
 				response.setStatus(201);//验证码输入错误
+				responseBean.setCode("10");
+				responseBean.setMessage("201");
+				write.write(gson.toJson(responseBean));
 			}
 		}else{
 			response.setStatus(202);//手机和之前发送的不同
+			responseBean.setCode("10");
+			responseBean.setMessage("202");
+			write.write(gson.toJson(responseBean));
 		}
 		write.flush();
 		write.close();

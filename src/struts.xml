@@ -18,5 +18,8 @@
         <action name="doGetRecord" class="action.UserAction" method="doGetRecord"/>
         <action name="doAddPower" class="action.UserAction" method="doAddPower"/>
         <action name="doGainPower" class="action.UserAction" method="doGainPower"/>
+        <action name="doGetCanSteal" class="action.UserAction" method="doGetCanSteal"/>
+        <action name="doUpdateStepPower" class="action.UserAction" method="doUpdateStepPower"/>
+        <action name="doUploadSchedule" class="action.UserAction" method="doUploadSchedule"/>
     </package>
 </struts>

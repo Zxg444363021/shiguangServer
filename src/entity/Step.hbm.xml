@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="entity.Step" table="step" schema="shiguang">
+        <id name="id">
+            <column name="id" sql-type="bigint(10)"/>
+        </id>
+        <property name="userid">
+            <column name="userid" sql-type="bigint(5)"/>
+        </property>
+        <property name="currentNumber">
+            <column name="current_number" sql-type="int(10)"/>
+        </property>
+        <property name="todayStep">
+            <column name="today_step" sql-type="int(10)"/>
+        </property>
+        <property name="date">
+            <column name="date" sql-type="date"/>
+        </property>
+        <property name="uuid">
+            <column name="uuid" sql-type="varchar(45)" length="45" not-null="false"/>
+        </property>
+    </class>
+</hibernate-mapping>
